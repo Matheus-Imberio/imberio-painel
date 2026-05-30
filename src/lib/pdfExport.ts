@@ -9,10 +9,10 @@ declare module 'jspdf' {
   }
 }
 
-const COMPANY_NAME = 'DYQUE & DAYA';
-const COMPANY_SUBTITLE = 'REBOBINAGEM DE MOTORES ELÉTRICOS';
-const COMPANY_PHONE = '(44) 3524-2171 / 98846-7576 / 98437-4616';
-const COMPANY_ADDRESS = 'RUA DUQUE DE CAXIAS, 166 (FUNDOS) - JD. LAR PARANÁ - CAMPO MOURÃO - PR';
+const COMPANY_NAME = 'IMBERIO';
+const COMPANY_SUBTITLE = 'ASSISTÊNCIA TÉCNICA ELÉTRICA';
+const COMPANY_PHONE = '';
+const COMPANY_ADDRESS = '';
 
 // Função auxiliar para limpar e validar número de telefone
 function cleanPhoneNumber(phone: string): string | null {
@@ -74,7 +74,7 @@ function generateBudgetPDFDoc(budget: BudgetExpanded): jsPDF {
   };
 
   // Header com background
-  doc.setFillColor(26, 54, 71);
+  doc.setFillColor(47, 48, 51);
   doc.rect(0, 0, pageWidth, config.headerHeight, 'F');
 
   // Company Info
@@ -86,8 +86,12 @@ function generateBudgetPDFDoc(budget: BudgetExpanded): jsPDF {
   doc.setFontSize(config.headerSubFontSize);
   doc.setFont('helvetica', 'normal');
   doc.text(COMPANY_SUBTITLE, margin, config.headerHeight * 0.52);
-  doc.text(`Fone: ${COMPANY_PHONE}`, margin, config.headerHeight * 0.68);
-  doc.text(COMPANY_ADDRESS, margin, config.headerHeight * 0.85);
+  if (COMPANY_PHONE) {
+    doc.text(`Fone: ${COMPANY_PHONE}`, margin, config.headerHeight * 0.68);
+  }
+  if (COMPANY_ADDRESS) {
+    doc.text(COMPANY_ADDRESS, margin, config.headerHeight * 0.85);
+  }
 
   // Data no canto direito
   doc.setFontSize(config.headerSubFontSize + 1);
@@ -212,7 +216,7 @@ function generateBudgetPDFDoc(budget: BudgetExpanded): jsPDF {
     body: itemsData,
     theme: 'striped',
     headStyles: { 
-      fillColor: [26, 54, 71], 
+      fillColor: [47, 48, 51], 
       textColor: 255, 
       fontStyle: 'bold', 
       fontSize: config.itemFontSize,
@@ -253,7 +257,7 @@ function generateBudgetPDFDoc(budget: BudgetExpanded): jsPDF {
   doc.rect(pageWidth - margin - 70, yPos, 70, 14, 'F');
   doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(26, 54, 71);
+  doc.setTextColor(47, 48, 51);
   doc.text(`TOTAL: R$ ${budget.valor_total.toFixed(2)}`, pageWidth - margin - 5, yPos + 10, { align: 'right' });
 
   // Assinaturas
@@ -330,7 +334,7 @@ export function sendBudgetViaWhatsApp(budget: BudgetExpanded, clientPhone?: stri
   }
   
   message += `Atenciosamente,\n`;
-  message += `DYQUE & DAYA - Rebobinagem de Motores Elétricos`;
+  message += `IMBERIO - Assistência Técnica Elétrica`;
   
   // Abrir WhatsApp apenas com a mensagem (sem gerar/download de PDF)
   const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
@@ -376,7 +380,7 @@ export function exportBudgetToPDF(budget: BudgetExpanded) {
   };
 
   // Header com background
-  doc.setFillColor(26, 54, 71);
+  doc.setFillColor(47, 48, 51);
   doc.rect(0, 0, pageWidth, config.headerHeight, 'F');
 
   // Company Info
@@ -388,8 +392,12 @@ export function exportBudgetToPDF(budget: BudgetExpanded) {
   doc.setFontSize(config.headerSubFontSize);
   doc.setFont('helvetica', 'normal');
   doc.text(COMPANY_SUBTITLE, margin, config.headerHeight * 0.52);
-  doc.text(`Fone: ${COMPANY_PHONE}`, margin, config.headerHeight * 0.68);
-  doc.text(COMPANY_ADDRESS, margin, config.headerHeight * 0.85);
+  if (COMPANY_PHONE) {
+    doc.text(`Fone: ${COMPANY_PHONE}`, margin, config.headerHeight * 0.68);
+  }
+  if (COMPANY_ADDRESS) {
+    doc.text(COMPANY_ADDRESS, margin, config.headerHeight * 0.85);
+  }
 
   // Data no canto direito
   doc.setFontSize(config.headerSubFontSize + 1);
@@ -519,7 +527,7 @@ export function exportBudgetToPDF(budget: BudgetExpanded) {
     body: itemsData,
     theme: 'striped',
     headStyles: { 
-      fillColor: [26, 54, 71], 
+      fillColor: [47, 48, 51], 
       textColor: 255, 
       fontStyle: 'bold', 
       fontSize: config.itemFontSize,
@@ -562,7 +570,7 @@ export function exportBudgetToPDF(budget: BudgetExpanded) {
   doc.rect(pageWidth - margin - 70, yPos, 70, 14, 'F');
   doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(26, 54, 71);
+  doc.setTextColor(47, 48, 51);
   doc.text(`TOTAL: R$ ${budget.valor_total.toFixed(2)}`, pageWidth - margin - 5, yPos + 10, { align: 'right' });
 
   // Assinaturas - SEMPRE fixas no final da página
@@ -608,103 +616,95 @@ export function exportMotorHeaderToPDF(budget: BudgetExpanded, clientPhone?: str
   doc.setLineWidth(0.2);
   doc.rect(margin, margin, pageWidth - (margin * 2), pageHeight - (margin * 2), 'S');
 
-  // Tipo no header (sem fundo colorido, apenas texto)
-  // Ajustar posição inicial para dar espaço suficiente para o texto não cortar
-  let yPos = margin + 3; // Aumentado de 1.5 para 3mm para evitar corte
+  const fitFontSize = (
+    text: string,
+    maxWidth: number,
+    maxSize: number,
+    minSize: number,
+    fontStyle: 'normal' | 'bold' = 'normal'
+  ) => {
+    doc.setFont('helvetica', fontStyle);
+    for (let size = maxSize; size >= minSize; size -= 0.25) {
+      doc.setFontSize(size);
+      if (doc.getTextWidth(text) <= maxWidth) return size;
+    }
+    return minSize;
+  };
+
+  const maxTextWidth = pageWidth - (margin * 4);
+
   doc.setTextColor(0, 0, 0);
   doc.setFontSize(7);
   doc.setFont('helvetica', 'bold');
-  const headerTitle = isPreOrcamento ? 'PRÉ-ORÇAMENTO' : 'ORÇAMENTO';
-  doc.text(headerTitle, pageWidth / 2, yPos, { align: 'center' });
+  const headerTitle = isPreOrcamento ? 'PRE-ORCAMENTO' : 'ORCAMENTO';
+  doc.text(headerTitle, pageWidth / 2, 4.8, { align: 'center' });
 
-  // Linha 1: Nome do cliente (maior destaque)
-  yPos += 4; // Espaçamento ajustado
-  doc.setFontSize(9);
+  const clientName = budget.client_name.trim();
+  const clientFontSize = fitFontSize(clientName, maxTextWidth, 8, 5.2, 'bold');
+  doc.setFontSize(clientFontSize);
   doc.setFont('helvetica', 'bold');
-  
-  // Truncar nome se muito longo (máximo ~35 caracteres para 50mm em landscape)
-  const maxNameLength = 35;
-  const clientName = budget.client_name.length > maxNameLength
-    ? budget.client_name.substring(0, maxNameLength) + '...'
-    : budget.client_name;
-  
-  doc.text(clientName, pageWidth / 2, yPos, { align: 'center', maxWidth: pageWidth - (margin * 2) });
+  doc.text(clientName, pageWidth / 2, 8.8, { align: 'center', maxWidth: maxTextWidth });
 
-  // Linha 2: Telefone
-  yPos += 3.5;
   if (clientPhone) {
-    doc.setFontSize(8);
+    const formattedPhone = clientPhone.length > 24
+      ? clientPhone.substring(0, 24) + '...'
+      : clientPhone;
+    const phoneText = `Tel: ${formattedPhone}`;
+    const phoneFontSize = fitFontSize(phoneText, maxTextWidth, 6.2, 4.8, 'normal');
+    doc.setFontSize(phoneFontSize);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(60, 60, 60);
-    // Formatar telefone se necessário
-    const formattedPhone = clientPhone.length > 20 
-      ? clientPhone.substring(0, 20) + '...'
-      : clientPhone;
-    doc.text(`Tel: ${formattedPhone}`, pageWidth / 2, yPos, { align: 'center' });
+    doc.text(phoneText, pageWidth / 2, 12.2, { align: 'center', maxWidth: maxTextWidth });
   }
 
-  // Linha 3: Modelo do motor (se couber)
-  yPos += 3;
   const motorModel = [
     motor?.marca,
     motor?.modelo
-  ].filter(Boolean).join(' ') || '-';
+  ]
+    .filter(Boolean)
+    .map(value => String(value).trim())
+    .filter(value => value && !/^imberio$/i.test(value))
+    .join(' ');
 
-  if (motorModel && motorModel !== '-') {
-    doc.setFontSize(7);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(80, 80, 80);
-    doc.text('Motor:', margin + 1.5, yPos);
-    
-    doc.setFontSize(8);
+  if (motorModel) {
+    const motorText = `Motor: ${motorModel}`;
+    const motorFontSize = fitFontSize(motorText, maxTextWidth, 5.6, 4.4, 'bold');
+    doc.setFontSize(motorFontSize);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(0, 0, 0);
-    // Truncar modelo se muito longo (máximo ~30 caracteres em landscape)
-    const maxMotorLength = 30;
-    const truncatedMotor = motorModel.length > maxMotorLength
-      ? motorModel.substring(0, maxMotorLength) + '...'
-      : motorModel;
-    doc.text(truncatedMotor, margin + 1.5, yPos + 2.5);
-    yPos += 2.5; // Ajustar posição após o modelo
+    doc.text(motorText, pageWidth / 2, 15.4, { align: 'center', maxWidth: maxTextWidth });
   }
 
-  // Linha 4: Potência e polos (se disponível)
+  let detailY = 19.2;
   if (motor?.cv) {
-    yPos += 2.5; // Espaçamento reduzido para caber tudo
     let potenciaInfo = `${motor.cv} cv`;
-    // Tentar extrair polos do campo tipo ou rpm
     const tipoLower = motor.tipo?.toLowerCase() || '';
     const rpmValue = motor.rpm ? parseInt(motor.rpm) : null;
-    
-    // Extrair polos do campo tipo se contiver "polos" ou número seguido de "p"
     const polosMatch = tipoLower.match(/(\d+)\s*(?:polos?|p)/);
     let polos = polosMatch ? polosMatch[1] : null;
-    
-    // Se não encontrou nos polos, tentar calcular pelo RPM (aproximado)
+
     if (!polos && rpmValue) {
       if (rpmValue >= 3000) polos = '2';
       else if (rpmValue >= 1500) polos = '4';
       else if (rpmValue >= 1000) polos = '6';
     }
-    
+
     if (polos) {
       potenciaInfo += ` ${polos} polos`;
     }
-    
-    doc.setFontSize(7);
+
+    doc.setFontSize(6);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(0, 0, 0);
-    doc.text(`Potência: ${potenciaInfo}`, margin + 1.5, yPos);
+    doc.text(`Potencia: ${potenciaInfo}`, margin + 1.5, detailY);
+    detailY += 3;
   }
 
-  // Linha 5: Data de entrada (se disponível)
-  yPos += 3;
   const dataEntrada = new Date(budget.data).toLocaleDateString('pt-BR');
   doc.setFontSize(6);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(80, 80, 80);
-  doc.text(`Entrada: ${dataEntrada}`, margin + 1.5, yPos);
-
+  doc.text(`Entrada: ${dataEntrada}`, margin + 1.5, detailY);
   // Linha 6: Número do orçamento (canto inferior direito)
   const shortId = budget.id.toUpperCase().substring(0, 6);
   doc.setFontSize(5);
@@ -721,7 +721,7 @@ export function exportClientToPDF(client: Client, budgets: BudgetExpanded[]) {
   const pageWidth = doc.internal.pageSize.getWidth();
 
   // Header
-  doc.setFillColor(26, 54, 71);
+  doc.setFillColor(47, 48, 51);
   doc.rect(0, 0, pageWidth, 55, 'F');
 
   doc.setTextColor(255, 255, 255);
@@ -734,8 +734,12 @@ export function exportClientToPDF(client: Client, budgets: BudgetExpanded[]) {
   doc.text(COMPANY_SUBTITLE, 20, 26);
 
   doc.setFontSize(8);
-  doc.text(`Fone: ${COMPANY_PHONE}`, 20, 34);
-  doc.text(COMPANY_ADDRESS, 20, 41);
+  if (COMPANY_PHONE) {
+    doc.text(`Fone: ${COMPANY_PHONE}`, 20, 34);
+  }
+  if (COMPANY_ADDRESS) {
+    doc.text(COMPANY_ADDRESS, 20, 41);
+  }
 
   doc.setFontSize(12);
   doc.text('Ficha do Cliente', pageWidth - 20, 18, { align: 'right' });
@@ -794,7 +798,7 @@ export function exportClientToPDF(client: Client, budgets: BudgetExpanded[]) {
       head: [['Código', 'Data', 'Motor', 'Valor', 'Status']],
       body: budgetData,
       theme: 'striped',
-      headStyles: { fillColor: [26, 54, 71], textColor: 255, fontStyle: 'bold' },
+      headStyles: { fillColor: [47, 48, 51], textColor: 255, fontStyle: 'bold' },
       styles: { fontSize: 10, cellPadding: 4 },
       margin: { left: 20, right: 20 },
     });
@@ -809,3 +813,5 @@ export function exportClientToPDF(client: Client, budgets: BudgetExpanded[]) {
   // Save
   doc.save(`cliente_${client.nome.replace(/\s+/g, '_')}.pdf`);
 }
+
+

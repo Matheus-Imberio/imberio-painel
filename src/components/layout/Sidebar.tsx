@@ -7,7 +7,6 @@ import {
   FileText, 
   Package, 
   LogOut,
-  Cog,
   ChevronRight
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -54,12 +53,14 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
       {/* Logo */}
       <div className="p-6 border-b border-sidebar-border">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-sidebar-primary flex items-center justify-center">
-            <Cog className="w-6 h-6 text-sidebar-primary-foreground motor-spin" />
-          </div>
+          <img
+            src="/logo-imberio.jpg"
+            alt="IMBERIO"
+            className="w-12 h-12 rounded-lg object-cover bg-white p-1"
+          />
           <div>
-            <h1 className="font-bold text-lg text-sidebar-foreground">DYQUE & DAYA</h1>
-            <p className="text-xs text-sidebar-foreground/60">Registros</p>
+            <h1 className="font-bold text-lg text-sidebar-foreground">IMBERIO</h1>
+            <p className="text-xs text-sidebar-foreground/60">Assistência técnica elétrica</p>
           </div>
         </div>
       </div>

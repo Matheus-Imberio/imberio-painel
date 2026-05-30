@@ -1,29 +1,29 @@
 {
-  "name": "DYQUE & DAYA",
-  "short_name": "DYQUE & DAYA",
-  "description": "Sistema de gestão de motores elétricos, orçamentos técnicos e controle de peças",
+  "name": "IMBERIO",
+  "short_name": "IMBERIO",
+  "description": "Sistema de gestão de assistência técnica elétrica, orçamentos técnicos e controle de peças",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#1a3647",
+  "theme_color": "#2f3033",
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/favicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "/logo-imberio.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
       "purpose": "any maskable"
     },
     {
-      "src": "/favicon.svg",
+      "src": "/logo-imberio.jpg",
       "sizes": "192x192",
-      "type": "image/svg+xml",
+      "type": "image/jpeg",
       "purpose": "any"
     },
     {
-      "src": "/favicon.svg",
+      "src": "/logo-imberio.jpg",
       "sizes": "512x512",
-      "type": "image/svg+xml",
+      "type": "image/jpeg",
       "purpose": "any"
     }
   ]

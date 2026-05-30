@@ -1,4 +1,4 @@
-/* DYQUE & DAYA Registros - Industrial Design System */
+/* IMBERIO - Industrial Design System */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap');
 
 @tailwind base;
@@ -7,31 +7,31 @@
 
 @layer base {
   :root {
-    /* Industrial Color Palette */
-    --background: 210 20% 98%;
-    --foreground: 215 25% 15%;
+    /* Neutral gray palette inspired by the IMBERIO logo */
+    --background: 210 10% 96%;
+    --foreground: 220 12% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 15%;
+    --card-foreground: 220 12% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 15%;
+    --popover-foreground: 220 12% 10%;
 
-    /* Deep Petrol Blue - Primary */
-    --primary: 200 65% 25%;
+    /* Graphite Gray - Primary */
+    --primary: 220 10% 22%;
     --primary-foreground: 0 0% 100%;
 
     /* Steel Gray - Secondary */
-    --secondary: 210 15% 92%;
-    --secondary-foreground: 215 25% 25%;
+    --secondary: 220 8% 90%;
+    --secondary-foreground: 220 10% 22%;
 
     /* Muted Industrial */
-    --muted: 210 15% 95%;
-    --muted-foreground: 215 15% 45%;
+    --muted: 220 9% 92%;
+    --muted-foreground: 220 8% 42%;
 
-    /* Amber Orange - Accent/CTA */
-    --accent: 32 95% 50%;
-    --accent-foreground: 0 0% 100%;
+    /* IMBERIO Yellow - Accent/CTA */
+    --accent: 45 92% 55%;
+    --accent-foreground: 220 12% 10%;
 
     /* Success Green */
     --success: 145 65% 35%;
@@ -39,36 +39,36 @@
 
     /* Warning */
     --warning: 45 95% 50%;
-    --warning-foreground: 215 25% 15%;
+    --warning-foreground: 220 12% 10%;
 
     --destructive: 0 72% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 210 20% 88%;
-    --input: 210 20% 88%;
-    --ring: 200 65% 25%;
+    --border: 220 9% 82%;
+    --input: 220 9% 82%;
+    --ring: 45 92% 45%;
 
     --radius: 0.5rem;
 
     /* Sidebar */
-    --sidebar-background: 200 65% 20%;
-    --sidebar-foreground: 210 20% 95%;
-    --sidebar-primary: 32 95% 50%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 200 50% 30%;
+    --sidebar-background: 220 10% 16%;
+    --sidebar-foreground: 210 12% 94%;
+    --sidebar-primary: 45 92% 55%;
+    --sidebar-primary-foreground: 220 12% 10%;
+    --sidebar-accent: 220 8% 27%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 200 50% 30%;
-    --sidebar-ring: 32 95% 50%;
+    --sidebar-border: 220 8% 28%;
+    --sidebar-ring: 45 92% 55%;
 
     /* Custom Industrial Tokens */
-    --industrial-dark: 215 30% 12%;
-    --industrial-steel: 210 15% 75%;
-    --industrial-surface: 210 20% 96%;
-    --gradient-industrial: linear-gradient(135deg, hsl(200 65% 25%) 0%, hsl(200 50% 35%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(32 95% 50%) 0%, hsl(25 95% 55%) 100%);
-    --shadow-industrial: 0 4px 20px -4px hsl(200 65% 25% / 0.15);
-    --shadow-card: 0 2px 12px -2px hsl(215 25% 15% / 0.08);
-    --shadow-accent: 0 4px 16px -2px hsl(32 95% 50% / 0.35);
+    --industrial-dark: 220 12% 12%;
+    --industrial-steel: 220 8% 70%;
+    --industrial-surface: 220 9% 94%;
+    --gradient-industrial: linear-gradient(135deg, hsl(220 10% 18%) 0%, hsl(220 8% 34%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(48 95% 58%) 0%, hsl(42 90% 50%) 100%);
+    --shadow-industrial: 0 4px 20px -4px hsl(220 10% 10% / 0.18);
+    --shadow-card: 0 2px 12px -2px hsl(220 12% 10% / 0.10);
+    --shadow-accent: 0 4px 16px -2px hsl(45 92% 45% / 0.35);
   }
 
   .dark {
@@ -81,7 +81,7 @@
     --popover: 215 25% 14%;
     --popover-foreground: 210 20% 95%;
 
-    --primary: 200 60% 50%;
+    --primary: 220 8% 72%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 215 20% 20%;
@@ -90,8 +90,8 @@
     --muted: 215 20% 18%;
     --muted-foreground: 210 15% 60%;
 
-    --accent: 32 95% 55%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 45 92% 58%;
+    --accent-foreground: 220 12% 10%;
 
     --success: 145 60% 45%;
     --success-foreground: 0 0% 100%;
@@ -101,16 +101,16 @@
 
     --border: 215 20% 22%;
     --input: 215 20% 22%;
-    --ring: 200 60% 50%;
+    --ring: 45 92% 58%;
 
     --sidebar-background: 215 30% 8%;
     --sidebar-foreground: 210 20% 90%;
-    --sidebar-primary: 32 95% 55%;
-    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-primary: 45 92% 58%;
+    --sidebar-primary-foreground: 220 12% 10%;
     --sidebar-accent: 215 25% 18%;
     --sidebar-accent-foreground: 210 20% 95%;
     --sidebar-border: 215 20% 20%;
-    --sidebar-ring: 32 95% 55%;
+    --sidebar-ring: 45 92% 58%;
   }
 }
 
