@@ -1,0 +1,302 @@
+/* DYQUE & DAYA Registros - Industrial Design System */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Industrial Color Palette */
+    --background: 210 20% 98%;
+    --foreground: 215 25% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 215 25% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 25% 15%;
+
+    /* Deep Petrol Blue - Primary */
+    --primary: 200 65% 25%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Steel Gray - Secondary */
+    --secondary: 210 15% 92%;
+    --secondary-foreground: 215 25% 25%;
+
+    /* Muted Industrial */
+    --muted: 210 15% 95%;
+    --muted-foreground: 215 15% 45%;
+
+    /* Amber Orange - Accent/CTA */
+    --accent: 32 95% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Success Green */
+    --success: 145 65% 35%;
+    --success-foreground: 0 0% 100%;
+
+    /* Warning */
+    --warning: 45 95% 50%;
+    --warning-foreground: 215 25% 15%;
+
+    --destructive: 0 72% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 210 20% 88%;
+    --input: 210 20% 88%;
+    --ring: 200 65% 25%;
+
+    --radius: 0.5rem;
+
+    /* Sidebar */
+    --sidebar-background: 200 65% 20%;
+    --sidebar-foreground: 210 20% 95%;
+    --sidebar-primary: 32 95% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 200 50% 30%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 200 50% 30%;
+    --sidebar-ring: 32 95% 50%;
+
+    /* Custom Industrial Tokens */
+    --industrial-dark: 215 30% 12%;
+    --industrial-steel: 210 15% 75%;
+    --industrial-surface: 210 20% 96%;
+    --gradient-industrial: linear-gradient(135deg, hsl(200 65% 25%) 0%, hsl(200 50% 35%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(32 95% 50%) 0%, hsl(25 95% 55%) 100%);
+    --shadow-industrial: 0 4px 20px -4px hsl(200 65% 25% / 0.15);
+    --shadow-card: 0 2px 12px -2px hsl(215 25% 15% / 0.08);
+    --shadow-accent: 0 4px 16px -2px hsl(32 95% 50% / 0.35);
+  }
+
+  .dark {
+    --background: 215 30% 10%;
+    --foreground: 210 20% 95%;
+
+    --card: 215 25% 14%;
+    --card-foreground: 210 20% 95%;
+
+    --popover: 215 25% 14%;
+    --popover-foreground: 210 20% 95%;
+
+    --primary: 200 60% 50%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 215 20% 20%;
+    --secondary-foreground: 210 20% 90%;
+
+    --muted: 215 20% 18%;
+    --muted-foreground: 210 15% 60%;
+
+    --accent: 32 95% 55%;
+    --accent-foreground: 0 0% 100%;
+
+    --success: 145 60% 45%;
+    --success-foreground: 0 0% 100%;
+
+    --destructive: 0 65% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 215 20% 22%;
+    --input: 215 20% 22%;
+    --ring: 200 60% 50%;
+
+    --sidebar-background: 215 30% 8%;
+    --sidebar-foreground: 210 20% 90%;
+    --sidebar-primary: 32 95% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 215 25% 18%;
+    --sidebar-accent-foreground: 210 20% 95%;
+    --sidebar-border: 215 20% 20%;
+    --sidebar-ring: 32 95% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+}
+
+@layer components {
+  /* Industrial Button Styles */
+  .btn-industrial {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 text-base font-semibold rounded-lg transition-all duration-200;
+    @apply bg-primary text-primary-foreground hover:opacity-90 active:scale-[0.98];
+    box-shadow: var(--shadow-industrial);
+  }
+
+  .btn-industrial-accent {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 text-base font-semibold rounded-lg transition-all duration-200;
+    @apply text-accent-foreground active:scale-[0.98];
+    background: var(--gradient-accent);
+    box-shadow: var(--shadow-accent);
+  }
+
+  .btn-industrial-accent:hover {
+    filter: brightness(1.05);
+  }
+
+  .btn-industrial-large {
+    @apply px-8 py-4 text-lg min-h-[56px];
+  }
+
+  /* Card Industrial */
+  .card-industrial {
+    @apply bg-card rounded-lg sm:rounded-xl border border-border p-4 sm:p-6;
+    box-shadow: var(--shadow-card);
+  }
+
+  /* Industrial Input */
+  .input-industrial {
+    @apply w-full px-4 py-3 text-base rounded-lg border border-input bg-background;
+    @apply focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent;
+    @apply placeholder:text-muted-foreground;
+  }
+
+  /* Status Badges */
+  .badge-success {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
+    @apply bg-success/10 text-success;
+  }
+
+  .badge-warning {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
+    @apply bg-warning/10 text-warning;
+  }
+
+  .badge-pending {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
+    @apply bg-muted text-muted-foreground;
+  }
+
+  /* Industrial Table */
+  .table-industrial {
+    @apply w-full text-left;
+  }
+
+  .table-industrial th {
+    @apply px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-wider bg-muted/50 whitespace-nowrap;
+  }
+
+  .table-industrial td {
+    @apply px-2 sm:px-4 py-3 sm:py-4 text-sm sm:text-base border-b border-border;
+  }
+
+  .table-industrial tr:hover td {
+    @apply bg-muted/30;
+  }
+
+  /* Sidebar Navigation */
+  .nav-item {
+    @apply flex items-center gap-3 px-4 py-3 rounded-lg text-sidebar-foreground/80 transition-all duration-200;
+    @apply hover:bg-sidebar-accent hover:text-sidebar-accent-foreground;
+  }
+
+  .nav-item.active {
+    @apply bg-sidebar-accent text-sidebar-accent-foreground font-medium;
+  }
+
+  /* Search Box */
+  .search-industrial {
+    @apply relative;
+  }
+
+  .search-industrial input {
+    @apply w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-2.5 sm:py-3 text-sm sm:text-base rounded-lg sm:rounded-xl border border-input bg-background;
+    @apply focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent;
+  }
+
+  .search-industrial svg {
+    @apply absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4 sm:w-5 sm:h-5;
+  }
+
+  /* Stat Card */
+  .stat-card {
+    @apply card-industrial flex flex-col gap-1 sm:gap-2;
+  }
+
+  .stat-card .stat-value {
+    @apply text-2xl sm:text-3xl font-bold text-foreground;
+  }
+
+  .stat-card .stat-label {
+    @apply text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wide;
+  }
+
+  /* Motor Icon Animation */
+  @keyframes motor-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .motor-spin {
+    animation: motor-spin 3s linear infinite;
+  }
+
+  /* Page Transition */
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.3s ease-out;
+  }
+
+  /* Loading Spinner */
+  @keyframes spinner {
+    to { transform: rotate(360deg); }
+  }
+
+  .spinner {
+    @apply w-6 h-6 border-2 border-primary/20 border-t-primary rounded-full;
+    animation: spinner 0.8s linear infinite;
+  }
+
+  /* PDF Export Button */
+  .btn-pdf {
+    @apply inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg;
+    @apply bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors;
+  }
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-muted/50 rounded-full;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-muted-foreground/20 rounded-full hover:bg-muted-foreground/30;
+}
+
+/* Print Styles for PDF */
+@media print {
+  body {
+    @apply bg-white text-black;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+}
