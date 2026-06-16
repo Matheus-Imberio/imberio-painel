@@ -164,8 +164,7 @@ export default function BudgetDetailPage() {
   const [descontoReaisInput, setDescontoReaisInput] = useState<string | null>(null);
   const [descontoPercentualInput, setDescontoPercentualInput] = useState<string | null>(null);
   const [isUploadingPhotos, setIsUploadingPhotos] = useState(false);
-  const rearCameraInputRef = useRef<HTMLInputElement>(null);
-  const frontCameraInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
 
   const TIPOS_PAGAMENTO = [
@@ -672,6 +671,21 @@ export default function BudgetDetailPage() {
       }
     >
       <div className="space-y-4 sm:space-y-6">
+        {budget.photos.length > 0 && (
+          <div className="relative overflow-hidden rounded-lg border border-border bg-muted">
+            <div className="aspect-[16/9] max-h-[360px] w-full">
+              <img
+                src={(budget.photos.find(photo => photo.is_cover) || budget.photos[0]).public_url}
+                alt="Capa do orçamento"
+                className="h-full w-full object-cover"
+              />
+            </div>
+            <div className="absolute left-3 top-3 rounded-full bg-accent px-3 py-1 text-xs font-semibold text-accent-foreground shadow-sm">
+              Capa do orçamento
+            </div>
+          </div>
+        )}
+
         {/* Header Info */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
           <div className="card-industrial p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
@@ -780,20 +794,12 @@ export default function BudgetDetailPage() {
                 </p>
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <input
-                ref={rearCameraInputRef}
+                ref={cameraInputRef}
                 type="file"
                 accept="image/*"
-                capture="environment"
-                className="hidden"
-                onChange={handlePhotoSelection}
-              />
-              <input
-                ref={frontCameraInputRef}
-                type="file"
-                accept="image/*"
-                capture="user"
+                capture
                 className="hidden"
                 onChange={handlePhotoSelection}
               />
@@ -811,7 +817,7 @@ export default function BudgetDetailPage() {
                 size="sm"
                 className="w-full"
                 disabled={isUploadingPhotos}
-                onClick={() => rearCameraInputRef.current?.click()}
+                onClick={() => cameraInputRef.current?.click()}
               >
                 {isUploadingPhotos ? (
                   <span className="flex items-center justify-center gap-2">
@@ -821,20 +827,9 @@ export default function BudgetDetailPage() {
                 ) : (
                   <>
                     <Camera className="w-4 h-4 mr-2" />
-                    Traseira
+                    Tirar Foto
                   </>
                 )}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="w-full"
-                disabled={isUploadingPhotos}
-                onClick={() => frontCameraInputRef.current?.click()}
-              >
-                <Camera className="w-4 h-4 mr-2" />
-                Frontal
               </Button>
               <Button
                 type="button"
