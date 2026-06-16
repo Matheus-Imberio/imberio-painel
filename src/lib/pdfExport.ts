@@ -11,8 +11,8 @@ declare module 'jspdf' {
 
 const COMPANY_NAME = 'IMBERIO';
 const COMPANY_SUBTITLE = 'ASSISTÊNCIA TÉCNICA ELÉTRICA';
-const COMPANY_PHONE = '';
-const COMPANY_ADDRESS = '';
+const COMPANY_PHONE = '(44) 3525-3035 / +55 44 98437-4616';
+const COMPANY_ADDRESS = 'R. Vassilio Boiko - Jardim Aeroporto - Campo Mourao - PR - 87310-420';
 
 interface PdfImageData {
   dataUrl: string;
