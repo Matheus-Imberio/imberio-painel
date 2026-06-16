@@ -1,6 +1,6 @@
 # 🏭 Imbério Motor Hub
 
-Sistema completo de gestão de orçamentos para oficinas de motores elétricos. Gerencie clientes, peças, orçamentos e laudos técnicos de forma profissional e eficiente.
+Sistema completo de gestão de orçamentos para oficinas de motores elétricos. Gerencie clientes, peças, orçamentos e laudos técnicos de forma profissional e eficiente. 
 
 ![React](https://img.shields.io/badge/React-18.3.1-61DAFB?logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.8.3-3178C6?logo=typescript)
