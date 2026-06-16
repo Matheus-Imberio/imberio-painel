@@ -6,6 +6,7 @@ import type {
   Part, 
   Motor, 
   Budget, 
+  BudgetPhoto,
   BudgetItem,
   ClientInsert,
   ClientUpdate,
@@ -21,6 +22,10 @@ import type {
 // Re-exportar tipos para compatibilidade
 export type { Client, Part, Motor, Budget, BudgetItem };
 
+export interface BudgetPhotoExpanded extends BudgetPhoto {
+  public_url: string;
+}
+
 // Tipo expandido de Budget para uso na UI
 export interface BudgetExpanded {
   id: string;
@@ -29,6 +34,7 @@ export interface BudgetExpanded {
   operador_id: string;
   operador_name: string;
   motor: Motor;
+  photos: BudgetPhotoExpanded[];
   items: {
     id: string;
     part_id: string;
@@ -91,6 +97,9 @@ interface DataContextType {
     status?: 'pre_orcamento' | 'pendente' | 'concluido' | 'baixado';
   }) => Promise<BudgetExpanded | null>;
   updateBudget: (id: string, budget: Partial<BudgetExpanded>) => Promise<void>;
+  addBudgetPhotos: (budgetId: string, files: File[]) => Promise<boolean>;
+  setBudgetCoverPhoto: (budgetId: string, photoId: string) => Promise<boolean>;
+  deleteBudgetPhoto: (budgetId: string, photoId: string) => Promise<boolean>;
   updateBudgetMotor: (budgetId: string, motorData: Partial<Motor>) => Promise<boolean>;
   addBudgetItem: (budgetId: string, item: { part_id: string; quantidade: number; valor_unitario: number }) => Promise<boolean>;
   updateBudgetItem: (itemId: string, item: { quantidade: number; valor_unitario: number }) => Promise<boolean>;
@@ -102,6 +111,20 @@ interface DataContextType {
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
+const BUDGET_PHOTOS_BUCKET = 'budget-photos';
+
+const getBudgetPhotoPublicUrl = (storagePath: string) => {
+  const { data } = supabase.storage.from(BUDGET_PHOTOS_BUCKET).getPublicUrl(storagePath);
+  return data.publicUrl;
+};
+
+const buildBudgetPhotoPath = (budgetId: string, file: File, index: number) => {
+  const extension = file.name.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
+  const unique = typeof crypto !== 'undefined' && 'randomUUID' in crypto
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  return `${budgetId}/${Date.now()}-${index}-${unique}.${extension}`;
+};
 
 const defaultMotor = {
   id: '',
@@ -178,6 +201,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         client:clients(*),
         operador:profiles(*),
         motor:motors(*),
+        photos:budget_photos(*),
         items:budget_items(
           *,
           part:parts(*)
@@ -199,6 +223,15 @@ export function DataProvider({ children }: { children: ReactNode }) {
         valor_unitario: Number(item.valor_unitario),
         subtotal: Number(item.subtotal),
       }));
+      const photos = ((budget.photos || []) as BudgetPhoto[])
+        .map(photo => ({
+          ...photo,
+          public_url: getBudgetPhotoPublicUrl(photo.storage_path),
+        }))
+        .sort((a, b) => {
+          if (a.is_cover !== b.is_cover) return a.is_cover ? -1 : 1;
+          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        });
 
       return {
         id: budget.id,
@@ -207,6 +240,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         operador_id: budget.operador_id || '',
         operador_name: budget.operador?.name || 'Operador não encontrado',
         motor: budget.motor || defaultMotor,
+        photos,
         items,
         data: budget.data,
         valor_total: Number(budget.valor_total) || 0,
@@ -478,6 +512,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         valor_unitario: Number(item.valor_unitario),
         subtotal: Number(item.subtotal),
       })),
+      photos: [],
       data: (budgetResult as any).data,
       valor_total: budgetData.valor_total,
       desconto_percentual: budgetData.desconto_percentual,
@@ -513,6 +548,138 @@ export function DataProvider({ children }: { children: ReactNode }) {
     }
 
     setBudgets(prev => prev.map(b => b.id === id ? { ...b, ...budgetData } : b));
+  };
+
+  const addBudgetPhotos = async (budgetId: string, files: File[]): Promise<boolean> => {
+    if (files.length === 0) return true;
+
+    const budget = budgets.find(b => b.id === budgetId);
+    const shouldSetFirstAsCover = !budget?.photos.some(photo => photo.is_cover);
+    const uploadedPaths: string[] = [];
+
+    try {
+      const records: { budget_id: string; storage_path: string; is_cover: boolean }[] = [];
+
+      for (const [index, file] of files.entries()) {
+        const storagePath = buildBudgetPhotoPath(budgetId, file, index);
+        const { error: uploadError } = await supabase.storage
+          .from(BUDGET_PHOTOS_BUCKET)
+          .upload(storagePath, file, {
+            contentType: file.type || 'image/jpeg',
+            upsert: false,
+          });
+
+        if (uploadError) throw uploadError;
+        uploadedPaths.push(storagePath);
+
+        records.push({
+          budget_id: budgetId,
+          storage_path: storagePath,
+          is_cover: shouldSetFirstAsCover && index === 0,
+        });
+      }
+
+      const { data, error } = await supabase
+        .from('budget_photos')
+        .insert(records)
+        .select();
+
+      if (error || !data) {
+        await supabase.storage.from(BUDGET_PHOTOS_BUCKET).remove(uploadedPaths);
+        console.error('Erro ao salvar fotos do orçamento:', error);
+        return false;
+      }
+
+      const newPhotos: BudgetPhotoExpanded[] = (data as BudgetPhoto[]).map(photo => ({
+        ...photo,
+        public_url: getBudgetPhotoPublicUrl(photo.storage_path),
+      }));
+
+      setBudgets(prev => prev.map(b => (
+        b.id === budgetId
+          ? { ...b, photos: [...b.photos, ...newPhotos].sort((a, b) => Number(b.is_cover) - Number(a.is_cover)) }
+          : b
+      )));
+
+      return true;
+    } catch (error) {
+      if (uploadedPaths.length > 0) {
+        await supabase.storage.from(BUDGET_PHOTOS_BUCKET).remove(uploadedPaths);
+      }
+      console.error('Erro ao enviar fotos do orçamento:', error);
+      return false;
+    }
+  };
+
+  const setBudgetCoverPhoto = async (budgetId: string, photoId: string): Promise<boolean> => {
+    const { error: clearError } = await (supabase.from('budget_photos') as any)
+      .update({ is_cover: false })
+      .eq('budget_id', budgetId);
+
+    if (clearError) {
+      console.error('Erro ao limpar capa do orçamento:', clearError);
+      return false;
+    }
+
+    const { error: coverError } = await (supabase.from('budget_photos') as any)
+      .update({ is_cover: true })
+      .eq('id', photoId);
+
+    if (coverError) {
+      console.error('Erro ao definir capa do orçamento:', coverError);
+      return false;
+    }
+
+    setBudgets(prev => prev.map(b => (
+      b.id === budgetId
+        ? {
+            ...b,
+            photos: b.photos
+              .map(photo => ({ ...photo, is_cover: photo.id === photoId }))
+              .sort((a, b) => Number(b.is_cover) - Number(a.is_cover)),
+          }
+        : b
+    )));
+
+    return true;
+  };
+
+  const deleteBudgetPhoto = async (budgetId: string, photoId: string): Promise<boolean> => {
+    const budget = budgets.find(b => b.id === budgetId);
+    const photo = budget?.photos.find(item => item.id === photoId);
+    if (!budget || !photo) return false;
+
+    const remainingPhotos = budget.photos.filter(item => item.id !== photoId);
+
+    const { error } = await supabase
+      .from('budget_photos')
+      .delete()
+      .eq('id', photoId);
+
+    if (error) {
+      console.error('Erro ao remover foto do orçamento:', error);
+      return false;
+    }
+
+    await supabase.storage.from(BUDGET_PHOTOS_BUCKET).remove([photo.storage_path]);
+
+    let updatedRemaining = remainingPhotos;
+    if (photo.is_cover && remainingPhotos.length > 0 && !remainingPhotos.some(item => item.is_cover)) {
+      const nextCover = remainingPhotos[0];
+      const { error: coverError } = await (supabase.from('budget_photos') as any)
+        .update({ is_cover: true })
+        .eq('id', nextCover.id);
+
+      if (!coverError) {
+        updatedRemaining = remainingPhotos.map(item => ({ ...item, is_cover: item.id === nextCover.id }));
+      }
+    }
+
+    setBudgets(prev => prev.map(b => (
+      b.id === budgetId ? { ...b, photos: updatedRemaining } : b
+    )));
+
+    return true;
   };
 
   const updateBudgetMotor = async (budgetId: string, motorData: Partial<Motor>): Promise<boolean> => {
@@ -738,6 +905,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
       refreshParts,
       addBudget,
       updateBudget,
+      addBudgetPhotos,
+      setBudgetCoverPhoto,
+      deleteBudgetPhoto,
       updateBudgetMotor,
       addBudgetItem,
       updateBudgetItem,

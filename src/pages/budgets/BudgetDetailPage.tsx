@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useAuth } from '@/contexts/AuthContext';
@@ -22,13 +22,16 @@ import {
   FileText,
   User,
   Calendar,
+  Camera,
   CheckCircle,
   ArrowRight,
   Plus,
   Pencil,
   MessageCircle,
   Check,
-  ChevronsUpDown
+  ChevronsUpDown,
+  Image as ImageIcon,
+  Star
 } from 'lucide-react';
 import { exportBudgetToPDF, exportMotorHeaderToPDF, sendBudgetViaWhatsApp } from '@/lib/pdfExport';
 import {
@@ -70,6 +73,9 @@ export default function BudgetDetailPage() {
     addBudgetItem,
     updateBudgetItem,
     removeBudgetItem,
+    addBudgetPhotos,
+    setBudgetCoverPhoto,
+    deleteBudgetPhoto,
     refreshBudgets,
     parts,
     isLoading,
@@ -157,6 +163,8 @@ export default function BudgetDetailPage() {
   // Estado local do campo R$ para permitir digitar livremente (ex: "5,50"); null = mostrar valor calculado
   const [descontoReaisInput, setDescontoReaisInput] = useState<string | null>(null);
   const [descontoPercentualInput, setDescontoPercentualInput] = useState<string | null>(null);
+  const [isUploadingPhotos, setIsUploadingPhotos] = useState(false);
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   const TIPOS_PAGAMENTO = [
     { value: 'dinheiro', label: 'Dinheiro' },
@@ -499,6 +507,44 @@ export default function BudgetDetailPage() {
     toast.success('Pré-orçamento convertido em orçamento!');
   };
 
+  const handlePhotoSelection = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []).filter(file => file.type.startsWith('image/'));
+    if (files.length === 0) {
+      toast.error('Selecione uma ou mais imagens.');
+      event.target.value = '';
+      return;
+    }
+
+    setIsUploadingPhotos(true);
+    const success = await addBudgetPhotos(budget.id, files);
+    setIsUploadingPhotos(false);
+    event.target.value = '';
+
+    if (success) {
+      toast.success(files.length === 1 ? 'Foto adicionada ao orçamento.' : 'Fotos adicionadas ao orçamento.');
+    } else {
+      toast.error('Erro ao adicionar fotos. Verifique o tamanho dos arquivos e tente novamente.');
+    }
+  };
+
+  const handleSetCoverPhoto = async (photoId: string) => {
+    const success = await setBudgetCoverPhoto(budget.id, photoId);
+    if (success) {
+      toast.success('Capa do orçamento atualizada.');
+    } else {
+      toast.error('Erro ao definir a capa do orçamento.');
+    }
+  };
+
+  const handleDeletePhoto = async (photoId: string) => {
+    const success = await deleteBudgetPhoto(budget.id, photoId);
+    if (success) {
+      toast.success('Foto removida do orçamento.');
+    } else {
+      toast.error('Erro ao remover foto do orçamento.');
+    }
+  };
+
   return (
     <DashboardLayout 
       title={`Orçamento #${budget.id.toUpperCase().substring(0, 8)}`}
@@ -711,6 +757,108 @@ export default function BudgetDetailPage() {
               </p>
             </div>
           </div>
+        </div>
+
+        {/* Fotos do Orçamento */}
+        <div className="card-industrial">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-sm sm:text-lg font-semibold">Fotos do Orçamento</h3>
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  {budget.photos.length} foto(s) anexada(s)
+                </p>
+              </div>
+            </div>
+            <div>
+              <input
+                ref={photoInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                multiple
+                className="hidden"
+                onChange={handlePhotoSelection}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="w-full sm:w-auto"
+                disabled={isUploadingPhotos}
+                onClick={() => photoInputRef.current?.click()}
+              >
+                {isUploadingPhotos ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <span className="spinner h-4 w-4" />
+                    Enviando...
+                  </span>
+                ) : (
+                  <>
+                    <Camera className="w-4 h-4 mr-2" />
+                    Adicionar Foto
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+
+          {budget.photos.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+              {budget.photos.map(photo => (
+                <div key={photo.id} className="rounded-lg border border-border bg-muted/30 overflow-hidden">
+                  <div className="relative aspect-square bg-muted">
+                    <img
+                      src={photo.public_url}
+                      alt={photo.is_cover ? 'Capa do orçamento' : 'Foto do orçamento'}
+                      className="h-full w-full object-cover"
+                      loading="lazy"
+                    />
+                    {photo.is_cover && (
+                      <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-accent px-2 py-1 text-xs font-semibold text-accent-foreground">
+                        <Star className="h-3 w-3 fill-current" />
+                        Capa
+                      </span>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-2 gap-1 p-2">
+                    <Button
+                      type="button"
+                      variant={photo.is_cover ? 'secondary' : 'outline'}
+                      size="sm"
+                      className="h-8 px-2 text-xs"
+                      disabled={photo.is_cover}
+                      onClick={() => handleSetCoverPhoto(photo.id)}
+                    >
+                      <Star className="h-3.5 w-3.5 sm:mr-1" />
+                      <span className="hidden sm:inline">Capa</span>
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-2 text-xs text-destructive hover:text-destructive"
+                      onClick={() => handleDeletePhoto(photo.id)}
+                    >
+                      <Trash2 className="h-3.5 w-3.5 sm:mr-1" />
+                      <span className="hidden sm:inline">Remover</span>
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-lg border-2 border-dashed border-border bg-muted/20 p-6 text-center">
+              <Camera className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
+              <p className="text-sm font-medium">Nenhuma foto adicionada ainda.</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Use a câmera do celular ou selecione imagens do dispositivo.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Motor Data */}
@@ -1432,4 +1580,3 @@ export default function BudgetDetailPage() {
     </DashboardLayout>
   );
 }
-

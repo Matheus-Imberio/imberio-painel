@@ -195,6 +195,29 @@ export interface Database {
           tipo_pagamento?: string | null
         }
       }
+      budget_photos: {
+        Row: {
+          id: string
+          budget_id: string
+          storage_path: string
+          is_cover: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          budget_id: string
+          storage_path: string
+          is_cover?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          budget_id?: string
+          storage_path?: string
+          is_cover?: boolean
+          created_at?: string
+        }
+      }
       budget_items: {
         Row: {
           id: string
@@ -229,6 +252,7 @@ export type Client = Database['public']['Tables']['clients']['Row']
 export type Motor = Database['public']['Tables']['motors']['Row']
 export type Part = Database['public']['Tables']['parts']['Row']
 export type Budget = Database['public']['Tables']['budgets']['Row']
+export type BudgetPhoto = Database['public']['Tables']['budget_photos']['Row']
 export type BudgetItem = Database['public']['Tables']['budget_items']['Row']
 
 // Tipos para inserção
@@ -236,6 +260,7 @@ export type ClientInsert = Database['public']['Tables']['clients']['Insert']
 export type MotorInsert = Database['public']['Tables']['motors']['Insert']
 export type PartInsert = Database['public']['Tables']['parts']['Insert']
 export type BudgetInsert = Database['public']['Tables']['budgets']['Insert']
+export type BudgetPhotoInsert = Database['public']['Tables']['budget_photos']['Insert']
 export type BudgetItemInsert = Database['public']['Tables']['budget_items']['Insert']
 
 // Tipos para atualização
@@ -243,6 +268,7 @@ export type ClientUpdate = Database['public']['Tables']['clients']['Update']
 export type MotorUpdate = Database['public']['Tables']['motors']['Update']
 export type PartUpdate = Database['public']['Tables']['parts']['Update']
 export type BudgetUpdate = Database['public']['Tables']['budgets']['Update']
+export type BudgetPhotoUpdate = Database['public']['Tables']['budget_photos']['Update']
 export type BudgetItemUpdate = Database['public']['Tables']['budget_items']['Update']
 
 // Tipo expandido de Budget com relacionamentos
@@ -250,6 +276,6 @@ export interface BudgetWithRelations extends Budget {
   client: Client | null
   operador: Profile | null
   motor: Motor | null
+  photos: BudgetPhoto[]
   items: (BudgetItem & { part: Part | null })[]
 }
-
