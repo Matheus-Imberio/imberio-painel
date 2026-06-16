@@ -119,11 +119,75 @@ const getBudgetPhotoPublicUrl = (storagePath: string) => {
 };
 
 const buildBudgetPhotoPath = (budgetId: string, file: File, index: number) => {
-  const extension = file.name.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
+  const parts = file.name.split('.');
+  let extension = 'jpg';
+  
+  if (parts.length > 1) {
+    const rawExt = parts.pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || '';
+    if (['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif'].includes(rawExt)) {
+      extension = rawExt;
+    }
+  } else if (file.type && file.type.startsWith('image/')) {
+    const typeExt = file.type.split('/')[1]?.toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (typeExt && ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif'].includes(typeExt)) {
+      extension = typeExt;
+    }
+  }
+
   const unique = typeof crypto !== 'undefined' && 'randomUUID' in crypto
     ? crypto.randomUUID()
     : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
   return `${budgetId}/${Date.now()}-${index}-${unique}.${extension}`;
+};
+
+const normalizeBudgetPhotoFile = async (file: File): Promise<File> => {
+  const isImage = file.type.startsWith('image/') || 
+                  ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif'].some(ext => file.name.toLowerCase().endsWith('.' + ext)) ||
+                  !file.type || 
+                  file.type === 'application/octet-stream';
+
+  if (typeof window === 'undefined' || !isImage) return file;
+
+  return new Promise(resolve => {
+    const image = new Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    image.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+
+      const maxSize = 1000; // Optimized from 1800 to fit better in memory and speed up upload
+      const scale = Math.min(1, maxSize / Math.max(image.width, image.height));
+      const width = Math.max(1, Math.round(image.width * scale));
+      const height = Math.max(1, Math.round(image.height * scale));
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+
+      const context = canvas.getContext('2d');
+      if (!context) {
+        resolve(file);
+        return;
+      }
+
+      context.drawImage(image, 0, 0, width, height);
+      canvas.toBlob(blob => {
+        if (!blob) {
+          resolve(file);
+          return;
+        }
+
+        const baseName = (file.name || 'foto-orcamento').replace(/\.[^.]+$/, '') || 'foto-orcamento';
+        resolve(new File([blob], `${baseName}.jpg`, { type: 'image/jpeg' }));
+      }, 'image/jpeg', 0.86);
+    };
+
+    image.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      resolve(file);
+    };
+
+    image.src = objectUrl;
+  });
 };
 
 const defaultMotor = {
@@ -561,11 +625,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
       const records: { budget_id: string; storage_path: string; is_cover: boolean }[] = [];
 
       for (const [index, file] of files.entries()) {
-        const storagePath = buildBudgetPhotoPath(budgetId, file, index);
+        const uploadFile = await normalizeBudgetPhotoFile(file);
+        const storagePath = buildBudgetPhotoPath(budgetId, uploadFile, index);
         const { error: uploadError } = await supabase.storage
           .from(BUDGET_PHOTOS_BUCKET)
-          .upload(storagePath, file, {
-            contentType: file.type || 'image/jpeg',
+          .upload(storagePath, uploadFile, {
+            contentType: uploadFile.type || 'image/jpeg',
             upsert: false,
           });
 

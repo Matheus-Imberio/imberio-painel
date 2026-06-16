@@ -6,7 +6,7 @@ VALUES (
   'budget-photos',
   true,
   10485760,
-  ARRAY['image/jpeg', 'image/png', 'image/webp']
+  ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif']
 )
 ON CONFLICT (id) DO UPDATE
 SET

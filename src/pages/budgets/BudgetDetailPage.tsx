@@ -164,7 +164,9 @@ export default function BudgetDetailPage() {
   const [descontoReaisInput, setDescontoReaisInput] = useState<string | null>(null);
   const [descontoPercentualInput, setDescontoPercentualInput] = useState<string | null>(null);
   const [isUploadingPhotos, setIsUploadingPhotos] = useState(false);
-  const photoInputRef = useRef<HTMLInputElement>(null);
+  const rearCameraInputRef = useRef<HTMLInputElement>(null);
+  const frontCameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
 
   const TIPOS_PAGAMENTO = [
     { value: 'dinheiro', label: 'Dinheiro' },
@@ -508,7 +510,12 @@ export default function BudgetDetailPage() {
   };
 
   const handlePhotoSelection = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files || []).filter(file => file.type.startsWith('image/'));
+    const files = Array.from(event.target.files || []).filter(file => 
+      file.type.startsWith('image/') || 
+      ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif'].some(ext => file.name.toLowerCase().endsWith('.' + ext)) ||
+      !file.type || 
+      file.type === 'application/octet-stream'
+    );
     if (files.length === 0) {
       toast.error('Selecione uma ou mais imagens.');
       event.target.value = '';
@@ -773,12 +780,27 @@ export default function BudgetDetailPage() {
                 </p>
               </div>
             </div>
-            <div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <input
-                ref={photoInputRef}
+                ref={rearCameraInputRef}
                 type="file"
                 accept="image/*"
                 capture="environment"
+                className="hidden"
+                onChange={handlePhotoSelection}
+              />
+              <input
+                ref={frontCameraInputRef}
+                type="file"
+                accept="image/*"
+                capture="user"
+                className="hidden"
+                onChange={handlePhotoSelection}
+              />
+              <input
+                ref={galleryInputRef}
+                type="file"
+                accept="image/*"
                 multiple
                 className="hidden"
                 onChange={handlePhotoSelection}
@@ -787,9 +809,9 @@ export default function BudgetDetailPage() {
                 type="button"
                 variant="outline"
                 size="sm"
-                className="w-full sm:w-auto"
+                className="w-full"
                 disabled={isUploadingPhotos}
-                onClick={() => photoInputRef.current?.click()}
+                onClick={() => rearCameraInputRef.current?.click()}
               >
                 {isUploadingPhotos ? (
                   <span className="flex items-center justify-center gap-2">
@@ -799,9 +821,31 @@ export default function BudgetDetailPage() {
                 ) : (
                   <>
                     <Camera className="w-4 h-4 mr-2" />
-                    Adicionar Foto
+                    Traseira
                   </>
                 )}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="w-full"
+                disabled={isUploadingPhotos}
+                onClick={() => frontCameraInputRef.current?.click()}
+              >
+                <Camera className="w-4 h-4 mr-2" />
+                Frontal
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="w-full"
+                disabled={isUploadingPhotos}
+                onClick={() => galleryInputRef.current?.click()}
+              >
+                <ImageIcon className="w-4 h-4 mr-2" />
+                Galeria
               </Button>
             </div>
           </div>

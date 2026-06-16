@@ -11,6 +11,7 @@ import {
   ChevronRight,
   Filter,
   FileText,
+  Image as ImageIcon,
   MessageCircle
 } from 'lucide-react';
 import { exportBudgetToPDF, exportMotorHeaderToPDF, sendBudgetViaWhatsApp } from '@/lib/pdfExport';
@@ -105,6 +106,8 @@ export default function BudgetsListPage() {
     outro: 'Outro',
   };
   const getTipoPagamentoLabel = (value: string) => TIPOS_PAGAMENTO_LABELS[value] ?? value;
+  const getCoverPhoto = (budget: (typeof budgets)[number]) =>
+    budget.photos.find(photo => photo.is_cover) || budget.photos[0];
 
   return (
     <DashboardLayout 
@@ -154,6 +157,20 @@ export default function BudgetsListPage() {
                 onClick={() => navigate(`${basePath}/orcamento/${budget.id}`)}
               >
                 <div className="flex items-start justify-between gap-3 mb-3">
+                  <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-border bg-muted">
+                    {getCoverPhoto(budget) ? (
+                      <img
+                        src={getCoverPhoto(budget)!.public_url}
+                        alt="Capa do orçamento"
+                        className="h-full w-full object-cover"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                        <ImageIcon className="h-6 w-6" />
+                      </div>
+                    )}
+                  </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-base truncate">{budget.client_name}</p>
                     <p className="text-sm text-muted-foreground truncate">
@@ -246,6 +263,7 @@ export default function BudgetsListPage() {
             <table className="table-industrial">
               <thead>
                 <tr>
+                  <th>Capa</th>
                   <th>Código</th>
                   <th>Cliente</th>
                   <th>Motor</th>
@@ -259,6 +277,22 @@ export default function BudgetsListPage() {
               <tbody>
                 {paginatedBudgets.map((budget) => (
                   <tr key={budget.id}>
+                    <td>
+                      <div className="h-12 w-12 overflow-hidden rounded-md border border-border bg-muted">
+                        {getCoverPhoto(budget) ? (
+                          <img
+                            src={getCoverPhoto(budget)!.public_url}
+                            alt="Capa do orçamento"
+                            className="h-full w-full object-cover"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                            <ImageIcon className="h-5 w-5" />
+                          </div>
+                        )}
+                      </div>
+                    </td>
                     <td className="font-mono text-sm">
                       #{budget.id.toUpperCase().substring(0, 6)}
                     </td>

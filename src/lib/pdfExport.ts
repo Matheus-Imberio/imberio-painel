@@ -14,7 +14,98 @@ const COMPANY_SUBTITLE = 'ASSISTÊNCIA TÉCNICA ELÉTRICA';
 const COMPANY_PHONE = '';
 const COMPANY_ADDRESS = '';
 
+interface PdfImageData {
+  dataUrl: string;
+  width: number;
+  height: number;
+}
+
+function blobToDataUrl(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+}
+
+function getImageSize(dataUrl: string): Promise<{ width: number; height: number }> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve({ width: image.naturalWidth || image.width, height: image.naturalHeight || image.height });
+    image.onerror = reject;
+    image.src = dataUrl;
+  });
+}
+
+async function loadPhotoForPDF(url: string): Promise<PdfImageData | null> {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return null;
+
+    const blob = await response.blob();
+    const dataUrl = await blobToDataUrl(blob);
+    const size = await getImageSize(dataUrl);
+    return { dataUrl, ...size };
+  } catch (error) {
+    console.error('Erro ao carregar foto para PDF:', error);
+    return null;
+  }
+}
+
 // Função auxiliar para limpar e validar número de telefone
+function drawPhotoGrid(
+  doc: jsPDF,
+  photos: PdfImageData[],
+  startY: number,
+  maxHeight: number,
+  margin: number,
+  titleSize: number
+) {
+  if (photos.length === 0 || maxHeight < 24) return startY;
+
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const usableWidth = pageWidth - (margin * 2);
+  const gap = 2;
+  const columns = photos.length >= 3 ? 3 : photos.length;
+  const titleHeight = 5;
+  const rowCount = Math.ceil(photos.length / columns);
+  const availableImageHeight = maxHeight - titleHeight - 3 - (gap * Math.max(0, rowCount - 1));
+  const cellHeight = Math.max(16, Math.min(34, availableImageHeight / rowCount));
+  const cellWidth = (usableWidth - gap * (columns - 1)) / columns;
+
+  doc.setTextColor(0, 0, 0);
+  doc.setFontSize(titleSize);
+  doc.setFont('helvetica', 'bold');
+  doc.text('FOTOS DO SERVICO', margin, startY);
+
+  const currentY = startY + titleHeight + 2;
+
+  photos.forEach((photo, index) => {
+    const column = index % columns;
+    const row = Math.floor(index / columns);
+    const x = margin + column * (cellWidth + gap);
+    const y = currentY + row * (cellHeight + gap);
+    const ratio = photo.width / photo.height;
+    let drawWidth = cellWidth;
+    let drawHeight = cellHeight;
+
+    if (ratio > cellWidth / cellHeight) {
+      drawHeight = cellWidth / ratio;
+    } else {
+      drawWidth = cellHeight * ratio;
+    }
+
+    const drawX = x + (cellWidth - drawWidth) / 2;
+    const drawY = y + (cellHeight - drawHeight) / 2;
+    doc.setDrawColor(210, 214, 220);
+    doc.rect(x, y, cellWidth, cellHeight);
+    doc.addImage(photo.dataUrl, 'JPEG', drawX, drawY, drawWidth, drawHeight);
+  });
+
+  return currentY + rowCount * cellHeight + gap * Math.max(0, rowCount - 1);
+}
+
 function cleanPhoneNumber(phone: string): string | null {
   if (!phone) return null;
   
@@ -262,6 +353,29 @@ function generateBudgetPDFDoc(budget: BudgetExpanded): jsPDF {
 
   // Assinaturas
   const signatureY = pageHeight - 20;
+
+  yPos += 20;
+  if (pdfPhotos.length > 0) {
+    const remainingPhotoHeight = signatureY - yPos - 8;
+    const minPhotoHeight = 26;
+
+    if (remainingPhotoHeight >= minPhotoHeight) {
+      const maxRowsOnFirstPage = Math.max(1, Math.floor((remainingPhotoHeight - 8) / minPhotoHeight));
+      const maxPhotosOnFirstPage = Math.min(pdfPhotos.length, maxRowsOnFirstPage * 3);
+      const firstPagePhotos = pdfPhotos.slice(0, maxPhotosOnFirstPage);
+      const remainingPhotos = pdfPhotos.slice(firstPagePhotos.length);
+
+      drawPhotoGrid(doc, firstPagePhotos, yPos, remainingPhotoHeight, margin, config.sectionTitleSize);
+
+      if (remainingPhotos.length > 0) {
+        doc.addPage();
+        drawPhotoGrid(doc, remainingPhotos, 20, pageHeight - 35, margin, config.sectionTitleSize);
+      }
+    } else {
+      doc.addPage();
+      drawPhotoGrid(doc, pdfPhotos, 20, pageHeight - 35, margin, config.sectionTitleSize);
+    }
+  }
   doc.setTextColor(0, 0, 0);
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
@@ -343,7 +457,7 @@ export function sendBudgetViaWhatsApp(budget: BudgetExpanded, clientPhone?: stri
   return true;
 }
 
-export function exportBudgetToPDF(budget: BudgetExpanded) {
+export async function exportBudgetToPDF(budget: BudgetExpanded) {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
@@ -378,6 +492,14 @@ export function exportBudgetToPDF(budget: BudgetExpanded) {
     sectionSpacing: [10, 8, 6, 4][compactLevel],
     signatureSpacing: [35, 30, 25, 20][compactLevel],
   };
+
+  const orderedPhotos = [...budget.photos].sort((a, b) => {
+    if (a.is_cover !== b.is_cover) return a.is_cover ? -1 : 1;
+    return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+  });
+  const pdfPhotos = (await Promise.all(
+    orderedPhotos.slice(0, 12).map(photo => loadPhotoForPDF(photo.public_url))
+  )).filter((photo): photo is PdfImageData => Boolean(photo));
 
   // Header com background
   doc.setFillColor(47, 48, 51);
