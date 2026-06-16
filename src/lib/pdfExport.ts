@@ -94,46 +94,28 @@ function drawPhotoGrid(
 ) {
   if (photos.length === 0 || maxHeight < 24) return startY;
 
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const usableWidth = pageWidth - (margin * 2);
-  const gap = 2;
-  const columns = photos.length >= 3 ? 3 : photos.length;
-  const titleHeight = 5;
+  const columns = 3;
+  const gap = 5;
+  const photoWidth = 55;
+  const photoHeight = 40;
   const rowCount = Math.ceil(photos.length / columns);
-  const availableImageHeight = maxHeight - titleHeight - 3 - (gap * Math.max(0, rowCount - 1));
-  const cellHeight = Math.max(16, Math.min(34, availableImageHeight / rowCount));
-  const cellWidth = (usableWidth - gap * (columns - 1)) / columns;
 
   doc.setTextColor(0, 0, 0);
   doc.setFontSize(titleSize);
   doc.setFont('helvetica', 'bold');
-  doc.text('FOTOS DO SERVICO', margin, startY);
+  doc.text('FOTOS DO ORCAMENTO', margin, startY);
 
-  const currentY = startY + titleHeight + 2;
+  const currentY = startY + 5;
 
   photos.forEach((photo, index) => {
     const column = index % columns;
     const row = Math.floor(index / columns);
-    const x = margin + column * (cellWidth + gap);
-    const y = currentY + row * (cellHeight + gap);
-    const ratio = photo.width / photo.height;
-    let drawWidth = cellWidth;
-    let drawHeight = cellHeight;
-
-    if (ratio > cellWidth / cellHeight) {
-      drawHeight = cellWidth / ratio;
-    } else {
-      drawWidth = cellHeight * ratio;
-    }
-
-    const drawX = x + (cellWidth - drawWidth) / 2;
-    const drawY = y + (cellHeight - drawHeight) / 2;
-    doc.setDrawColor(210, 214, 220);
-    doc.rect(x, y, cellWidth, cellHeight);
-    doc.addImage(photo.dataUrl, 'JPEG', drawX, drawY, drawWidth, drawHeight);
+    const x = margin + column * (photoWidth + gap);
+    const y = currentY + row * (photoHeight + gap);
+    doc.addImage(photo.dataUrl, 'JPEG', x, y, photoWidth, photoHeight, undefined, 'FAST');
   });
 
-  return currentY + rowCount * cellHeight + gap * Math.max(0, rowCount - 1);
+  return currentY + rowCount * photoHeight + gap * Math.max(0, rowCount - 1);
 }
 
 function cleanPhoneNumber(phone: string): string | null {
