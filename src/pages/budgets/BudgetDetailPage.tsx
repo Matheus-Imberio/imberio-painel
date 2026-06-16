@@ -673,11 +673,11 @@ export default function BudgetDetailPage() {
       <div className="space-y-4 sm:space-y-6">
         {budget.photos.length > 0 && (
           <div className="relative overflow-hidden rounded-lg border border-border bg-muted">
-            <div className="aspect-[16/9] max-h-[360px] w-full">
+            <div className="flex max-h-[420px] min-h-[220px] w-full items-center justify-center bg-muted">
               <img
                 src={(budget.photos.find(photo => photo.is_cover) || budget.photos[0]).public_url}
                 alt="Capa do orçamento"
-                className="h-full w-full object-cover"
+                className="max-h-[420px] w-full object-contain"
               />
             </div>
             <div className="absolute left-3 top-3 rounded-full bg-accent px-3 py-1 text-xs font-semibold text-accent-foreground shadow-sm">
