@@ -20,7 +20,7 @@ Sistema completo de gestão de orçamentos para oficinas de motores elétricos. 
 - [Estrutura do Projeto](#-estrutura-do-projeto)
 - [Segurança](#-segurança)
 - [Deploy](#-deploy)
-- [Contribuindo](#-contribuindo)
+- [Contribuindo](#-contribuindo).
 
 ## 🎯 Sobre o Projeto
 
