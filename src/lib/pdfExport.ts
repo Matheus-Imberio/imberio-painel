@@ -38,6 +38,33 @@ function getImageSize(dataUrl: string): Promise<{ width: number; height: number 
   });
 }
 
+function imageToJpegData(dataUrl: string, maxSize = 1200): Promise<PdfImageData> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => {
+      const sourceWidth = image.naturalWidth || image.width;
+      const sourceHeight = image.naturalHeight || image.height;
+      const scale = Math.min(1, maxSize / Math.max(sourceWidth, sourceHeight));
+      const width = Math.max(1, Math.round(sourceWidth * scale));
+      const height = Math.max(1, Math.round(sourceHeight * scale));
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+
+      const context = canvas.getContext('2d');
+      if (!context) {
+        reject(new Error('Canvas indisponivel para imagem do PDF'));
+        return;
+      }
+
+      context.drawImage(image, 0, 0, width, height);
+      resolve({ dataUrl: canvas.toDataURL('image/jpeg', 0.82), width, height });
+    };
+    image.onerror = reject;
+    image.src = dataUrl;
+  });
+}
+
 async function loadPhotoForPDF(url: string): Promise<PdfImageData | null> {
   try {
     const response = await fetch(url);
@@ -45,6 +72,9 @@ async function loadPhotoForPDF(url: string): Promise<PdfImageData | null> {
 
     const blob = await response.blob();
     const dataUrl = await blobToDataUrl(blob);
+    if (typeof document !== 'undefined') {
+      return await imageToJpegData(dataUrl);
+    }
     const size = await getImageSize(dataUrl);
     return { dataUrl, ...size };
   } catch (error) {
@@ -163,6 +193,7 @@ function generateBudgetPDFDoc(budget: BudgetExpanded): jsPDF {
     sectionSpacing: [10, 8, 6, 4][compactLevel],
     signatureSpacing: [35, 30, 25, 20][compactLevel],
   };
+  const pdfPhotos: PdfImageData[] = [];
 
   // Header com background
   doc.setFillColor(47, 48, 51);
@@ -353,9 +384,8 @@ function generateBudgetPDFDoc(budget: BudgetExpanded): jsPDF {
 
   // Assinaturas
   const signatureY = pageHeight - 20;
-
-  yPos += 20;
   if (pdfPhotos.length > 0) {
+    yPos += 20;
     const remainingPhotoHeight = signatureY - yPos - 8;
     const minPhotoHeight = 26;
 
@@ -697,6 +727,28 @@ export async function exportBudgetToPDF(budget: BudgetExpanded) {
 
   // Assinaturas - SEMPRE fixas no final da página
   const signatureY = pageHeight - 20;
+  if (pdfPhotos.length > 0) {
+    yPos += 20;
+    const remainingPhotoHeight = signatureY - yPos - 8;
+    const minPhotoHeight = 26;
+
+    if (remainingPhotoHeight >= minPhotoHeight) {
+      const maxRowsOnFirstPage = Math.max(1, Math.floor((remainingPhotoHeight - 8) / minPhotoHeight));
+      const maxPhotosOnFirstPage = Math.min(pdfPhotos.length, maxRowsOnFirstPage * 3);
+      const firstPagePhotos = pdfPhotos.slice(0, maxPhotosOnFirstPage);
+      const remainingPhotos = pdfPhotos.slice(firstPagePhotos.length);
+
+      drawPhotoGrid(doc, firstPagePhotos, yPos, remainingPhotoHeight, margin, config.sectionTitleSize);
+
+      if (remainingPhotos.length > 0) {
+        doc.addPage();
+        drawPhotoGrid(doc, remainingPhotos, 20, pageHeight - 35, margin, config.sectionTitleSize);
+      }
+    } else {
+      doc.addPage();
+      drawPhotoGrid(doc, pdfPhotos, 20, pageHeight - 35, margin, config.sectionTitleSize);
+    }
+  }
   
   doc.setTextColor(0, 0, 0);
   doc.setFontSize(9);
