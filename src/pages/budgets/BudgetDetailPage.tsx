@@ -557,22 +557,22 @@ export default function BudgetDetailPage() {
       title={`Orçamento #${budget.id.toUpperCase().substring(0, 8)}`}
       subtitle={`Cliente: ${budget.client_name}`}
       actions={
-        <div className="flex items-center gap-1 sm:gap-2">
+        <div className="flex max-w-full flex-wrap items-center justify-end gap-1.5 sm:gap-2">
           {/* Voltar - ícone no mobile */}
-          <Button variant="ghost" size="sm" className="hidden sm:flex" onClick={() => navigate(-1)}>
+          <Button variant="ghost" size="sm" className="hidden md:flex h-9 px-2 lg:px-3" onClick={() => navigate(-1)}>
             <ArrowLeft className="w-4 h-4 mr-2" />
             Voltar
           </Button>
-          <Button variant="ghost" size="icon" className="sm:hidden h-9 w-9" onClick={() => navigate(-1)}>
+          <Button variant="ghost" size="icon" className="md:hidden h-9 w-9" onClick={() => navigate(-1)}>
             <ArrowLeft className="w-4 h-4" />
           </Button>
           
           {/* Exportar PDF */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="btn-pdf h-9">
-                <Download className="w-4 h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Exportar</span>
+              <Button variant="outline" size="sm" className="btn-pdf h-9 px-2 lg:px-3">
+                <Download className="w-4 h-4 lg:mr-2" />
+                <span className="hidden lg:inline">Exportar</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -611,28 +611,28 @@ export default function BudgetDetailPage() {
                   onClick={handleConvertToOrcamento}
                   disabled={isConverting}
                   size="sm"
-                  className="bg-green-600 hover:bg-green-700 text-white h-9"
+                  className="bg-green-600 hover:bg-green-700 text-white h-9 px-2 lg:px-3"
                 >
                   {isConverting ? '...' : (
                     <>
-                      <ArrowRight className="w-4 h-4 sm:mr-2" />
-                      <span className="hidden sm:inline">Converter</span>
+                      <ArrowRight className="w-4 h-4 lg:mr-2" />
+                      <span className="hidden lg:inline">Converter</span>
                     </>
                   )}
                 </Button>
               )}
               
-              <Button variant="outline" size="sm" className="h-9" onClick={handleEdit}>
-                <Edit className="w-4 h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Editar</span>
+              <Button variant="outline" size="sm" className="h-9 px-2 lg:px-3" onClick={handleEdit}>
+                <Edit className="w-4 h-4 lg:mr-2" />
+                <span className="hidden lg:inline">Editar</span>
               </Button>
               
               {isAdmin && (
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button variant="destructive" size="sm" className="h-9">
-                      <Trash2 className="w-4 h-4 sm:mr-2" />
-                      <span className="hidden sm:inline">Excluir</span>
+                    <Button variant="destructive" size="sm" className="h-9 px-2 lg:px-3">
+                      <Trash2 className="w-4 h-4 lg:mr-2" />
+                      <span className="hidden lg:inline">Excluir</span>
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent className="max-w-[90vw] sm:max-w-lg">
@@ -658,13 +658,13 @@ export default function BudgetDetailPage() {
             </>
           ) : (
             <>
-              <Button variant="ghost" size="sm" className="h-9" onClick={handleCancelEdit}>
-                <X className="w-4 h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Cancelar</span>
+              <Button variant="ghost" size="sm" className="h-9 px-2 lg:px-3" onClick={handleCancelEdit}>
+                <X className="w-4 h-4 lg:mr-2" />
+                <span className="hidden lg:inline">Cancelar</span>
               </Button>
-              <Button onClick={handleSaveEdit} size="sm" className="btn-industrial-accent h-9">
-                <Save className="w-4 h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Salvar</span>
+              <Button onClick={handleSaveEdit} size="sm" className="btn-industrial-accent h-9 px-2 lg:px-3">
+                <Save className="w-4 h-4 lg:mr-2" />
+                <span className="hidden lg:inline">Salvar</span>
               </Button>
             </>
           )}
