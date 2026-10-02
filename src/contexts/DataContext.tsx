@@ -96,7 +96,7 @@ interface DataContextType {
     data?: string;
     status?: 'pre_orcamento' | 'pendente' | 'concluido' | 'baixado';
   }) => Promise<BudgetExpanded | null>;
-  updateBudget: (id: string, budget: Partial<BudgetExpanded>) => Promise<void>;
+  updateBudget: (id: string, budget: Partial<BudgetExpanded>) => Promise<boolean>;
   addBudgetPhotos: (budgetId: string, files: File[]) => Promise<boolean>;
   setBudgetCoverPhoto: (budgetId: string, photoId: string) => Promise<boolean>;
   deleteBudgetPhoto: (budgetId: string, photoId: string) => Promise<boolean>;
@@ -509,8 +509,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
       motor_id: (motorData as any).id,
       valor_total: budgetData.valor_total,
       desconto_percentual: budgetData.desconto_percentual || null,
-      laudo_tecnico: budgetData.laudo_tecnico,
-      observacoes: budgetData.observacoes,
+      laudo_tecnico: budgetData.laudo_tecnico || null,
+      observacoes: budgetData.observacoes || null,
       status: budgetData.status || 'pendente',
     };
 
@@ -589,12 +589,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
     return expandedBudget;
   };
 
-  const updateBudget = async (id: string, budgetData: Partial<BudgetExpanded>) => {
+  const updateBudget = async (id: string, budgetData: Partial<BudgetExpanded>): Promise<boolean> => {
     const updateData: Record<string, unknown> = {};
     
     if (budgetData.valor_total !== undefined) updateData.valor_total = budgetData.valor_total;
-    if (budgetData.laudo_tecnico !== undefined) updateData.laudo_tecnico = budgetData.laudo_tecnico;
-    if (budgetData.observacoes !== undefined) updateData.observacoes = budgetData.observacoes;
+    if (budgetData.desconto_percentual !== undefined) updateData.desconto_percentual = budgetData.desconto_percentual;
+    if (budgetData.laudo_tecnico !== undefined) updateData.laudo_tecnico = budgetData.laudo_tecnico || null;
+    if (budgetData.observacoes !== undefined) updateData.observacoes = budgetData.observacoes || null;
     if (budgetData.status !== undefined) updateData.status = budgetData.status;
     if (budgetData.tipo_pagamento !== undefined) updateData.tipo_pagamento = budgetData.tipo_pagamento;
     if (budgetData.data !== undefined) updateData.data = budgetData.data;
@@ -607,11 +608,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
       if (error) {
         console.error('Erro ao atualizar orçamento:', error);
-        return;
+        return false;
       }
     }
 
     setBudgets(prev => prev.map(b => b.id === id ? { ...b, ...budgetData } : b));
+    return true;
   };
 
   const addBudgetPhotos = async (budgetId: string, files: File[]): Promise<boolean> => {

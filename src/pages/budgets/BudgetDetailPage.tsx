@@ -288,13 +288,24 @@ export default function BudgetDetailPage() {
     const desconto = hasDescontoEdit && editData.desconto_percentual > 0
       ? (subtotal * editData.desconto_percentual) / 100
       : 0;
+    if (isEditingMotor) {
+      const motorSaved = await updateBudgetMotor(budget.id, motorData);
+      if (!motorSaved) {
+        toast.error('Erro ao atualizar dados do motor.');
+        return;
+      }
+    }
     const novoValorTotal = subtotal - desconto;
-    await updateBudget(budget.id, {
+    const success = await updateBudget(budget.id, {
       ...editData,
       ...payload,
       valor_total: novoValorTotal,
       desconto_percentual: hasDescontoEdit ? editData.desconto_percentual : undefined,
     });
+    if (!success) {
+      toast.error('Erro ao atualizar o orçamento. Tente novamente.');
+      return;
+    }
     setIsEditing(false);
     setIsEditingMotor(false);
     setIsAddingItem(false);
